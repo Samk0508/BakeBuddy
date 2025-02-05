@@ -1,0 +1,19 @@
+package com.bakebuddy.service;
+
+import java.util.List;
+
+import com.bakebuddy.enums.AccountStatus;
+import com.bakebuudy.entites.BakeryOwner;
+
+public interface BakeryOwnerService {
+	BakeryOwner getBakeryOwnerProfile(String jwt);// throws BakeryOwnerException;
+	BakeryOwner createBakeryOwner(BakeryOwner bakeryOwner);// throws BakeryOwnerException;
+	BakeryOwner getBakeryOwnerById(Long id); //throws BakeryOwnerException;
+	BakeryOwner getBakeryOwnerByEmail(String email); //throws BakeryOwnerException;
+    List<BakeryOwner> getAllBakeryOwner(AccountStatus status);
+    BakeryOwner updateBakeryOwner(Long id, BakeryOwner bakeryOwner); //throws BakeryOwnerException;
+    void deleteBakeryOwner(Long id); //throws BakeryOwnerException;
+    BakeryOwner verifyEmail(String email,String otp);//throws BakeryOwnerException;
+
+    BakeryOwner updateBakeryOwnerAccountStatus(Long bakeryOwnerId, AccountStatus status); //throws BakeryOwnerException;
+}

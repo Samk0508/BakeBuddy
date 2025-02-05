@@ -1,0 +1,10 @@
+package com.bakebuddy.service;
+
+import com.bakebuudy.entites.BakeryOwner;
+import com.bakebuudy.entites.BakeryOwnerReport;
+
+public interface BakeryOwnerReportService {
+	BakeryOwnerReport getSellerReport(BakeryOwner bakeryOwner);
+	BakeryOwnerReport updateSellerReport( BakeryOwnerReport BakeryOwnerReport);
+
+}

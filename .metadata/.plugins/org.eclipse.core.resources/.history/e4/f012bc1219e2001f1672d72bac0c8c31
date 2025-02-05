@@ -1,0 +1,15 @@
+package com.bakebuddy.service;
+
+import java.util.List;
+
+import com.bakebuudy.entites.BakeryOwner;
+import com.bakebuudy.entites.Order;
+import com.bakebuudy.entites.Transaction;
+
+
+public interface TransactionService {
+
+    Transaction createTransaction(Order order);
+    List<Transaction> getTransactionBySeller(BakeryOwner bakeryOwner);
+    List<Transaction>getAllTransactions();
+}

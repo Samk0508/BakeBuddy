@@ -1,0 +1,17 @@
+package com.bakebuddy.service;
+
+
+import com.bakebuudy.entites.Product;
+import com.bakebuudy.entites.User;
+import com.bakebuudy.entites.Wishlist;
+
+public interface WishlistService {
+
+    Wishlist createWishlist(User user);
+
+    Wishlist getWishlistByUserId(User user);
+
+    Wishlist addProductToWishlist(User user, Product product);// throws WishlistNotFoundException;
+
+}
+

@@ -1,0 +1,15 @@
+package com.bakebuddy.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.bakebuudy.entites.Cart;
+import com.bakebuudy.entites.CartItem;
+import com.bakebuudy.entites.Product;
+
+public interface CartItemRepository extends JpaRepository<CartItem, Long> {
+
+
+    CartItem findByCartAndProduct(Cart cart, Product product);
+
+
+}

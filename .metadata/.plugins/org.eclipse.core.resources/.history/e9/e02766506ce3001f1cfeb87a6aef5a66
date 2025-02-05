@@ -1,0 +1,33 @@
+package com.bakebuddy.service.impl;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.bakebuddy.entites.User;
+import com.bakebuddy.repository.UserRepository;
+import com.bakebuddy.service.UserService;
+@Service
+
+public class UserServiceImpl implements UserService{
+
+	   @Autowired
+	    private UserRepository userRepository;
+	   
+	   @Autowired
+		ModelMapper model;
+	   
+	   
+	@Override
+	public User findUserProfileByJwt(String jwt) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public User findUserByEmail(String email) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

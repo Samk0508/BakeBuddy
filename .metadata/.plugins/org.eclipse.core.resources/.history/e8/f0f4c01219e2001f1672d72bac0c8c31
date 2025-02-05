@@ -1,0 +1,20 @@
+package com.bakebuddy.service;
+
+import java.util.List;
+
+import com.bakebuddy.dto.UserDto;
+import com.bakebuudy.entites.User;
+
+public interface UserService {
+
+	public User findUserProfileByJwt(String jwt);// throws UserException;
+	
+	public User findUserByEmail(String email);// throws UserException;
+
+	    UserDto getUserById(Long id);
+	    List<UserDto> getAllUsers();
+	    UserDto createUser(UserDto userDTO);
+	    UserDto updateUser(Long id, UserDto userDto);
+	    void deleteUser(Long id);
+
+}

@@ -1,0 +1,5 @@
+package com.bakebuudy.entites;
+
+public class PaymentDetails {
+
+}

@@ -1,0 +1,5 @@
+package com.bakebuddy.controllers;
+
+public class UserController {
+
+}

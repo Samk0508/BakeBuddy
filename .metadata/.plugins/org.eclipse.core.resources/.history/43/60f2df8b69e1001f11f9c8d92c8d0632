@@ -1,0 +1,7 @@
+package com.bakebuddy.enums;
+
+public enum UserRole {
+    CUSTOMER, 
+    BAKERY_OWNER, 
+    ADMIN
+}
