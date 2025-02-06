@@ -5,6 +5,8 @@ import java.util.Set;
 import com.bakebuddy.entites.Order;
 import com.bakebuddy.entites.PaymentOrder;
 import com.bakebuddy.entites.User;
+import com.razorpay.PaymentLink;
+import com.razorpay.RazorpayException;
 
 
 public interface PaymentService {
@@ -16,12 +18,12 @@ public interface PaymentService {
 
     PaymentOrder getPaymentOrderByPaymentId(String paymentId) throws Exception;
 
-//    Boolean ProceedPaymentOrder (PaymentOrder paymentOrder,
-//                                 String paymentId, String paymentLinkId) throws RazorpayException;
+    Boolean ProceedPaymentOrder (PaymentOrder paymentOrder,
+                                 String paymentId, String paymentLinkId) throws RazorpayException;
+    PaymentLink createRazorpayPaymentLink(User user,
+                                          Long Amount,                                          Long orderId) throws RazorpayException;
 
-//    PaymentLink createRazorpayPaymentLink(User user,
-//                                          Long Amount,
-//                                          Long orderId) throws RazorpayException;
+    
 //
 //    String createStripePaymentLink(User user, Long Amount,
 //                                            Long orderId) throws StripeException;

@@ -1,5 +1,0 @@
-package com.bakebuddy.enums;
-enum PayoutsStatus {
-    PENDING,
-    SUCCESS
-}

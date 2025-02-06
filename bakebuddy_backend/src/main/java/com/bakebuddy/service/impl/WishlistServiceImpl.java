@@ -1,50 +1,60 @@
-package com.zosh.service.impl;
-
-import com.zosh.exception.WishlistNotFoundException;
-import com.zosh.model.Product;
-import com.zosh.model.User;
-import com.zosh.model.Wishlist;
-import com.zosh.repository.WishlistRepository;
-import com.zosh.service.WishlistService;
-import lombok.RequiredArgsConstructor;
+package com.bakebuddy.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import com.bakebuddy.entites.Product;
+import com.bakebuddy.entites.User;
+import com.bakebuddy.entites.Wishlist;
+import com.bakebuddy.exception.ProductException;
+import com.bakebuddy.exception.WishlistNotFoundException;
+import com.bakebuddy.repository.WishlistRepository;
+import com.bakebuddy.service.WishlistService;
+
+import jakarta.transaction.Transactional;
 
 @Service
-@RequiredArgsConstructor
+@Transactional
 public class WishlistServiceImpl implements WishlistService {
+	@Autowired
+    private WishlistRepository wishlistRepository;
 
-    private final WishlistRepository wishlistRepository;
 
+	@Override
+	public Wishlist createWishlist(User user) {
+	    Wishlist wishlist = new Wishlist();
+	    wishlist.setUser(user);
+	    return wishlistRepository.save(wishlist);
+	}
 
-    @Override
-    public Wishlist createWishlist(User user) {
-        Wishlist wishlist = new Wishlist();
-        wishlist.setUser(user);
-        return wishlistRepository.save(wishlist);
-    }
+	@Override
+	public Wishlist getWishlistByUserId(User user) throws WishlistNotFoundException {
+	    Wishlist wishlist = wishlistRepository.findByUserId(user.getId());
+	    if (wishlist == null) {
+	        throw new WishlistNotFoundException("Wishlist not found for user with ID: " + user.getId());
+	    }
+	    return wishlist;
+	}
 
-    @Override
-    public Wishlist getWishlistByUserId(User user) {
-        Wishlist wishlist = wishlistRepository.findByUserId(user.getId());
-        if (wishlist == null) {
-            wishlist = this.createWishlist(user);
-        }
-        return wishlist;
-    }
+	@Override
+	public Wishlist addProductToWishlist(User user, Product product) throws WishlistNotFoundException, ProductException {
+	    // Get user's wishlist, or throw an exception if not found
+	    Wishlist wishlist = this.getWishlistByUserId(user);
 
-    @Override
-    public Wishlist addProductToWishlist(User user, Product product) throws WishlistNotFoundException {
-        Wishlist wishlist = this.getWishlistByUserId(user);
-        if(wishlist.getProducts().contains(product)){
-            wishlist.getProducts().remove(product);
-        }
-        else wishlist.getProducts().add(product);
+	    // Check if product is null
+	    if (product == null) {
+	        throw new ProductException("Product not found");
+	    }
 
-        return wishlistRepository.save(wishlist);
-    }
+	    // Add or remove product from the wishlist
+	    if (wishlist.getProducts().contains(product)) {
+	        wishlist.getProducts().remove(product);  // If product is already in wishlist, remove it
+	    } else {
+	        wishlist.getProducts().add(product);    // If not, add it
+	    }
+
+	    // Save the updated wishlist
+	    return wishlistRepository.save(wishlist);
+	}
 
 
 }

@@ -9,7 +9,7 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.bakebuddy</groupId>
-	<artifactId>Bake_Buddy</artifactId>
+	<artifactId>bakebuddy_backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Bake_Buddy</name>
 	<description>backend for BakeBuddy</description>

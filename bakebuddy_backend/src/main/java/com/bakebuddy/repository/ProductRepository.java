@@ -19,7 +19,10 @@ public interface ProductRepository extends JpaRepository<Product,Long> , JpaSpec
             "OR (:query IS NULL OR LOWER(p.category.name) " +
             "LIKE LOWER(CONCAT('%', :query, '%'))) " +
             "OR (:query IS NULL OR p.category.id = :query)")
-List<Product> searchProduct(@Param("query") String query);
+    List<Product> searchProduct(@Param("query") String query);
+
+
+	List<Product> findTop10ByOrderByCreatedAtDesc();
 
     
     

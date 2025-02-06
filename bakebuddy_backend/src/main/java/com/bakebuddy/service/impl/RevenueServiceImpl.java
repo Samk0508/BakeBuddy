@@ -1,34 +1,34 @@
-package com.zosh.service.impl;
-
-import com.zosh.dto.RevenueChart;
-import com.zosh.model.Order;
-import com.zosh.repository.OrderRepository;
-import com.zosh.service.RevenueService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
+package com.bakebuddy.service.impl;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.bakebuddy.dto.RevenueChart;
+import com.bakebuddy.entites.Order;
+import com.bakebuddy.repository.OrderRepository;
+import com.bakebuddy.service.RevenueService;
+
+import jakarta.transaction.Transactional;
 
 @Service
-@RequiredArgsConstructor
+@Transactional
 public class RevenueServiceImpl implements RevenueService {
-
-    private final OrderRepository orderRepository;
+	@Autowired
+    private  OrderRepository orderRepository;
 
     // Get daily revenue data for the past X days
-    public List<RevenueChart> getDailyRevenueForChart(int days,Long sellerId) {
+    public List<RevenueChart> getDailyRevenueForChart(int days,Long BakeryOwnerId) {
         List<RevenueChart> revenueData = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();
 
         for (int i = days - 1; i >= 0; i--) {
             LocalDate date = currentDate.minusDays(i);
             double dailyRevenue = orderRepository
-                    .findBySellerIdAndOrderDateBetween(sellerId,date.atStartOfDay(), date.plusDays(1).atStartOfDay())
+                    .findByBakeryDetails_BakeryOwner_IdAndOrderDateBetween(BakeryOwnerId,date.atStartOfDay(), date.plusDays(1).atStartOfDay())
                     .stream()
                     .mapToDouble(Order::getTotalSellingPrice)
                     .sum();
@@ -44,7 +44,7 @@ public class RevenueServiceImpl implements RevenueService {
     }
 
     // Get monthly revenue data for the past X months
-    public List<RevenueChart> getMonthlyRevenueForChart(int months,Long sellerId) {
+    public List<RevenueChart> getMonthlyRevenueForChart(int months,Long BakeryOwnerId) {
         List<RevenueChart> revenueData = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();
 
@@ -54,7 +54,7 @@ public class RevenueServiceImpl implements RevenueService {
             LocalDate startOfNextMonth = startOfMonth.plusMonths(1);
 
             double monthlyRevenue = orderRepository
-                    .findBySellerIdAndOrderDateBetween(sellerId,startOfMonth.atStartOfDay(), startOfNextMonth.atStartOfDay())
+                    .findByBakeryDetails_BakeryOwner_IdAndOrderDateBetween(BakeryOwnerId,startOfMonth.atStartOfDay(), startOfNextMonth.atStartOfDay())
                     .stream()
                     .mapToDouble(Order::getTotalSellingPrice)
                     .sum();
@@ -70,7 +70,7 @@ public class RevenueServiceImpl implements RevenueService {
     }
 
     // Get yearly revenue data for the past X years
-    public List<RevenueChart> getYearlyRevenueForChart(int years,Long sellerId) {
+    public List<RevenueChart> getYearlyRevenueForChart(int years,Long BakeryOwnerId) {
         List<RevenueChart> revenueData = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();
 
@@ -79,7 +79,7 @@ public class RevenueServiceImpl implements RevenueService {
             LocalDate startOfNextYear = startOfYear.plusYears(1);
 
             double yearlyRevenue = orderRepository
-                    .findBySellerIdAndOrderDateBetween(sellerId,startOfYear.atStartOfDay(), startOfNextYear.atStartOfDay())
+                    .findByBakeryDetails_BakeryOwner_IdAndOrderDateBetween(BakeryOwnerId,startOfYear.atStartOfDay(), startOfNextYear.atStartOfDay())
                     .stream()
                     .mapToDouble(Order::getTotalSellingPrice)
                     .sum();
@@ -94,7 +94,7 @@ public class RevenueServiceImpl implements RevenueService {
     }
 
     @Override
-    public List<RevenueChart> getHourlyRevenueForChart(Long sellerId) {
+    public List<RevenueChart> getHourlyRevenueForChart(Long BakeryOwnerId) {
         List<RevenueChart> revenueData = new ArrayList<>();
 
         // Get the current date
@@ -110,7 +110,7 @@ public class RevenueServiceImpl implements RevenueService {
 
             // Calculate revenue for this hour (from startOfHour to startOfNextHour)
             double hourlyRevenue = orderRepository
-                    .findBySellerIdAndOrderDateBetween(sellerId, startOfHour, startOfNextHour)
+                    .findByBakeryDetails_BakeryOwner_IdAndOrderDateBetween(BakeryOwnerId, startOfHour, startOfNextHour)
                     .stream()
                     .mapToDouble(Order::getTotalSellingPrice)
                     .sum();
@@ -128,14 +128,14 @@ public class RevenueServiceImpl implements RevenueService {
     }
 
     @Override
-    public List<RevenueChart> getRevenueChartByType(String type,Long sellerId) {
+    public List<RevenueChart> getRevenueChartByType(String type,Long BakeryOwnerId) {
         if(type.equals("monthly")){
-            return this.getMonthlyRevenueForChart(12,sellerId);
+            return this.getMonthlyRevenueForChart(12,BakeryOwnerId);
         }
         else if(type.equals("daily")){
-            return this.getDailyRevenueForChart(30,sellerId);
+            return this.getDailyRevenueForChart(30,BakeryOwnerId);
         }
-        else return this.getHourlyRevenueForChart(sellerId);
+        else return this.getHourlyRevenueForChart(BakeryOwnerId);
     }
 
 }

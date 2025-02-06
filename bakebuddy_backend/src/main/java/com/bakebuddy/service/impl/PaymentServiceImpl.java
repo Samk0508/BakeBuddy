@@ -1,37 +1,36 @@
-package com.zosh.service.impl;
-
-import com.razorpay.Payment;
-import com.razorpay.PaymentLink;
-import com.razorpay.RazorpayClient;
-import com.razorpay.RazorpayException;
-import com.stripe.Stripe;
-import com.stripe.exception.StripeException;
-import com.stripe.model.checkout.Session;
-import com.stripe.param.checkout.SessionCreateParams;
-import com.zosh.domain.PaymentOrderStatus;
-import com.zosh.domain.PaymentStatus;
-import com.zosh.model.Cart;
-import com.zosh.model.Order;
-import com.zosh.model.PaymentOrder;
-import com.zosh.model.User;
-import com.zosh.repository.CartRepository;
-import com.zosh.repository.OrderRepository;
-import com.zosh.repository.PaymentOrderRepository;
-import com.zosh.service.PaymentService;
-import lombok.RequiredArgsConstructor;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+package com.bakebuddy.service.impl;
 
 import java.util.Optional;
 import java.util.Set;
 
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import com.bakebuddy.entites.Order;
+import com.bakebuddy.entites.PaymentOrder;
+import com.bakebuddy.entites.User;
+import com.bakebuddy.enums.PaymentOrderStatus;
+import com.bakebuddy.enums.PaymentStatus;
+import com.bakebuddy.repository.CartRepository;
+import com.bakebuddy.repository.OrderRepository;
+import com.bakebuddy.repository.PaymentOrderRepository;
+import com.bakebuddy.service.PaymentService;
+import com.razorpay.Payment;
+import com.razorpay.PaymentLink;
+import com.razorpay.RazorpayClient;
+import com.razorpay.RazorpayException;
+
+import jakarta.mail.Session;
+import jakarta.transaction.Transactional;
+
 @Service
-@RequiredArgsConstructor
+@Transactional
 public class PaymentServiceImpl implements PaymentService {
 
-    @Value("${stripe.api.key}")
-    private String stripeSecretKey;
+//    @Value("${stripe.api.key}")
+//    private String stripeSecretKey;
 
     @Value("${razorpay.api.key}")
     private String apiKey;
@@ -39,17 +38,19 @@ public class PaymentServiceImpl implements PaymentService {
     @Value("${razorpay.api.secret}")
     private String apiSecret;
 
-
-    private final PaymentOrderRepository paymentOrderRepository;
-    private final OrderRepository orderRepository;
-    private final CartRepository cartRepository;
+    @Autowired
+    private PaymentOrderRepository paymentOrderRepository;
+    @Autowired
+    private OrderRepository orderRepository;
+    @Autowired
+    private CartRepository cartRepository;
 
 
 
     @Override
     public PaymentOrder createOrder(User user, Set<Order> orders) {
         Long amount=orders.stream().mapToLong(Order::getTotalSellingPrice).sum();
-        int couponPrice=cartRepository.findByUserId(user.getId()).getCouponPrice();
+        int couponPrice=cartRepository.findByUser_Id(user.getId()).getCouponPrice();
 
         PaymentOrder order=new PaymentOrder();
         order.setUser(user);
@@ -115,11 +116,8 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public PaymentLink createRazorpayPaymentLink(User user,
-                                            Long Amount,
-                                            Long orderId
-    )
-            throws RazorpayException {
+    public PaymentLink createRazorpayPaymentLink(User user,Long Amount,Long orderId
+    )throws RazorpayException {
 
         Long amount = Amount * 100;
 
@@ -134,7 +132,7 @@ public class PaymentServiceImpl implements PaymentService {
 
             // Create a JSON object with the customer details
             JSONObject customer = new JSONObject();
-            customer.put("name",user.getFullName());
+            customer.put("name",user.getName());
 
             customer.put("email",user.getEmail());
             paymentLinkRequest.put("customer",customer);
@@ -169,38 +167,38 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-    @Override
-    public String createStripePaymentLink(User user, Long amount,Long orderId) throws StripeException {
-        Stripe.apiKey = stripeSecretKey;
-
-        SessionCreateParams params = SessionCreateParams.builder()
-                .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
-                .setMode(SessionCreateParams.Mode.PAYMENT)
-                .setSuccessUrl("http://localhost:3000/payment-success/"+orderId)
-                .setCancelUrl("http://localhost:3000/payment/cancel")
-                .addLineItem(SessionCreateParams.LineItem.builder()
-                        .setQuantity(1L)
-                        .setPriceData(SessionCreateParams.LineItem.PriceData.builder()
-                                .setCurrency("usd")
-                                .setUnitAmount(amount*100)
-                                .setProductData(SessionCreateParams
-                                        .LineItem
-                                        .PriceData
-                                        .ProductData
-                                        .builder()
-                                        .setName("Top up wallet")
-                                        .build()
-                                ).build()
-                        ).build()
-                ).build();
-
-        Session session = Session.create(params);
-
-        System.out.println("session _____ " + session);
-
-//        PaymentLinkResponse res = new PaymentLinkResponse();
-//        res.setPayment_link_url(session.getUrl());
-
-        return session.getUrl();
-    }
+//    @Override
+//    public String createStripePaymentLink(User user, Long amount,Long orderId) throws StripeException {
+//        Stripe.apiKey = stripeSecretKey;
+//
+//        SessionCreateParams params = SessionCreateParams.builder()
+//                .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
+//                .setMode(SessionCreateParams.Mode.PAYMENT)
+//                .setSuccessUrl("http://localhost:3000/payment-success/"+orderId)
+//                .setCancelUrl("http://localhost:3000/payment/cancel")
+//                .addLineItem(SessionCreateParams.LineItem.builder()
+//                        .setQuantity(1L)
+//                        .setPriceData(SessionCreateParams.LineItem.PriceData.builder()
+//                                .setCurrency("INR")
+//                                .setUnitAmount(amount*100)
+//                                .setProductData(SessionCreateParams
+//                                        .LineItem
+//                                        .PriceData
+//                                        .ProductData
+//                                        .builder()
+//                                        .setName("Top up wallet")
+//                                        .build()
+//                                ).build()
+//                        ).build()
+//                ).build();
+//
+//        Session session = Session.create(params);
+//
+//        System.out.println("session _____ " + session);
+//
+////        PaymentLinkResponse res = new PaymentLinkResponse();
+////        res.setPayment_link_url(session.getUrl());
+//
+//        return session.getUrl();
+//    }
 }

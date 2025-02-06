@@ -1,16 +1,9 @@
-package com.zosh.service.impl;
+package com.bakebuddy.service.impl;
 
-import com.zosh.exception.ProductException;
-import com.zosh.model.Category;
-import com.zosh.model.Product;
-import com.zosh.model.Seller;
-import com.zosh.repository.CategoryRepository;
-import com.zosh.repository.ProductRepository;
-import com.zosh.request.CreateProductRequest;
-import com.zosh.service.ProductService;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,82 +12,80 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import com.bakebuddy.dto.request.CreateProductRequest;
+import com.bakebuddy.entites.BakeryDetails;
+import com.bakebuddy.entites.BakeryOwner;
+import com.bakebuddy.entites.Category;
+import com.bakebuddy.entites.Product;
+import com.bakebuddy.exception.ProductException;
+import com.bakebuddy.repository.CategoryRepository;
+import com.bakebuddy.repository.ProductRepository;
+import com.bakebuddy.service.ProductService;
+
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
+@Transactional
 public class ProductServiceImpl implements ProductService {
 
-
-    private final ProductRepository productRepository;
-    
-    private final CategoryRepository categoryRepository;
-
-
-    @Override
-    public Product createProduct(CreateProductRequest req,
-
-                                 Seller seller
-                                 ) throws ProductException {
+	@Autowired
+    private  ProductRepository productRepository;
+    @Autowired
+    private  CategoryRepository categoryRepository;
 
 
+    public Product createProduct(CreateProductRequest req, BakeryOwner bakeryOwner) throws ProductException {
+        // Get BakeryDetails from BakeryOwner
+        BakeryDetails bakeryDetails = bakeryOwner.getBakeryDetails();
+        if (bakeryDetails == null) {
+            throw new ProductException("Bakery details not found for the given owner.");
+        }
+
+        // Calculate discount percentage
         int discountPercentage = calculateDiscountPercentage(req.getMrpPrice(), req.getSellingPrice());
 
-        Category category1=categoryRepository.findByCategoryId(req.getCategory());
-        if(category1==null){
-            Category category=new Category();
-            category.setCategoryId(req.getCategory());
-            category.setLevel(1);
-            category.setName(req.getCategory().replace("_"," "));
-            category1=categoryRepository.save(category);
+        // Ensure the category exists or create it if missing
+        Category category = categoryRepository.findByName(req.getCategory());
+        if (category == null) {
+            category = new Category();
+            category.setName(req.getCategory().replace("_", " "));
+            category = categoryRepository.save(category);
         }
 
-        Category category2=categoryRepository.findByCategoryId(req.getCategory2());
-        if(category2==null){
-            Category category=new Category();
-            category.setCategoryId(req.getCategory2());
-            category.setLevel(2);
-            category.setParentCategory(category1);
-            category.setName(req.getCategory2().replace("_"," "));
-            category2=categoryRepository.save(category);
-        }
-        Category category3=categoryRepository.findByCategoryId(req.getCategory3());
-        if(category3==null){
-            Category category=new Category();
-            category.setCategoryId(req.getCategory3());
-            category.setLevel(3);
-            category.setParentCategory(category2);
-            category.setName(req.getCategory3().replace("_"," "));
-            category3=categoryRepository.save(category);
-        }
-        
-        Product product=new Product();
-
-        product.setSeller(seller);
-        product.setCategory(category3);
+        // Create and set product properties
+        Product product = new Product();
+        product.setBakerydetails(bakeryDetails); // Linking product to BakeryDetails
+        product.setCategory(category);
         product.setTitle(req.getTitle());
-        product.setColor(req.getColor());
         product.setDescription(req.getDescription());
         product.setDiscountPercent(discountPercentage);
         product.setSellingPrice(req.getSellingPrice());
         product.setImages(req.getImages());
         product.setMrpPrice(req.getMrpPrice());
-        product.setSizes(req.getSizes());
         product.setCreatedAt(LocalDateTime.now());
-
+        product.setBakerydetails(bakeryDetails);
+        product.setCategory(category);
+        // Save product to the database
         return productRepository.save(product);
     }
+
 
     public static int calculateDiscountPercentage(double mrpPrice, double sellingPrice) {
         if (mrpPrice <= 0) {
             throw new IllegalArgumentException("Actual price must be greater than zero.");
         }
+        if (sellingPrice > mrpPrice) {
+            throw new IllegalArgumentException("Selling price cannot be greater than MRP price.");
+        }
+        
         double discount = mrpPrice - sellingPrice;
         double discountPercentage = (discount / mrpPrice) * 100;
-        return (int) discountPercentage;
+        return (int) Math.round(discountPercentage);
     }
+    
 
     @Override
     public void deleteProduct(Long productId) throws ProductException {
@@ -124,9 +115,6 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Page<Product> getAllProduct(String category,
-                                       String brand,
-                                       String color,
-                                       String size,
                                        Integer minPrice,
                                        Integer maxPrice,
                                        Integer minDiscount,
@@ -148,17 +136,6 @@ public class ProductServiceImpl implements ProductService {
 
 
                 predicates.add(categoryPredicate);
-            }
-
-
-            if (color != null && !color.isEmpty()) {
-                System.out.println("color "+color);
-                predicates.add(criteriaBuilder.equal(root.get("color"), color));
-            }
-
-            // Filter by size (single value)
-            if (size != null && !size.isEmpty()) {
-                predicates.add(criteriaBuilder.equal(root.get("size"), size));
             }
 
             if (minPrice != null) {
@@ -201,11 +178,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<Product> recentlyAddedProduct() {
-        return List.of();
+        // Fetch products ordered by creation date (newest first)
+        return productRepository.findTop10ByOrderByCreatedAtDesc();
     }
 
-    @Override
-    public List<Product> getProductBySellerId(Long sellerId) {
-        return productRepository.findBySellerId(sellerId);
-    }
+
+	@Override
+	public List<Product> getProductByBakeryOwnerId(Long bakeryOwnerId) {
+		
+		return productRepository.findByBakerydetails_Id(bakeryOwnerId);
+	}
 }

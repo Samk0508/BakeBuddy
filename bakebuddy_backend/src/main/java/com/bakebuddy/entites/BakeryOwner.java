@@ -21,10 +21,10 @@ public class BakeryOwner {
     private User user; // Links to User entity
 
     @OneToOne(cascade = CascadeType.ALL)
-    private BakeryDetails bakeryDetails;
+    private BakeryDetails bakeryDetails = new BakeryDetails();
 
     @OneToOne(cascade = CascadeType.ALL)
-    private BankDetails bankDetails;
+    private BankDetails bankDetails = new BankDetails();
 
     private boolean isApproved;
     

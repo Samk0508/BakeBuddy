@@ -11,7 +11,9 @@ public interface OrderRepository extends JpaRepository<Order,Long> {
 
 	List<Order> findByUser_Id(Long userId);
 
-    List<Order> findByBakeryOwner_IdOrderByOrderDateDesc(Long bakeryOwnerId);
-    List<Order> findByBakeryOwner_IdAndOrderDateBetween(Long bakeryOwnerId,LocalDateTime startDate, LocalDateTime endDate);
+	List<Order> findByBakeryDetails_BakeryOwner_IdOrderByOrderDateDesc(Long bakeryOwnerId);
+
+	List<Order> findByBakeryDetails_BakeryOwner_IdAndOrderDateBetween(
+		    Long bakeryOwnerId, LocalDateTime startDate, LocalDateTime endDate);
 
 }

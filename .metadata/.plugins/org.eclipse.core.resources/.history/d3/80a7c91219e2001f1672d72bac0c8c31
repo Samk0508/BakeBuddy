@@ -1,8 +1,0 @@
-package com.bakebuddy.service;
-
-import com.bakebuudy.entites.VerificationCode;
-
-public interface VerificationService {
-
-    VerificationCode createVerificationCode(String otp, String email);
-}

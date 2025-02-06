@@ -33,15 +33,13 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
     @ManyToOne
     //@JoinColumn(name = "user_id")
     private User user;
     
     @ManyToOne
-    private BakeryOwner bakeryOwner;
-
-   
+    private BakeryDetails bakeryDetails;
     
     @ManyToOne
     private Address shippingAddress;

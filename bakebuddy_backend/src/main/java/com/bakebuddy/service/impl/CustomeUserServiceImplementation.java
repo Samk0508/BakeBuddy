@@ -33,8 +33,8 @@ public class CustomeUserServiceImplementation implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         if (email.startsWith(BAKERY_OWNER_PREFIX)) {
             // Remove prefix to get the actual username/email
-            String actualUsername = email.substring(BAKERY_OWNER_PREFIX.length());
-            BakeryOwner bakeryOwner = bakeryOwnerRepository.findByUserEmail(actualUsername);
+            String actualEmail = email.substring(BAKERY_OWNER_PREFIX.length());
+            BakeryOwner bakeryOwner = bakeryOwnerRepository.findByUserEmail(actualEmail);
             if (bakeryOwner != null) {
             	return buildUserDetails(bakeryOwner.getUser().getEmail(), bakeryOwner.getUser().getPassword(), bakeryOwner.getUser().getRole());
             }

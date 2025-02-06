@@ -1,14 +1,19 @@
-package com.zosh.service.impl;
+package com.bakebuddy.service.impl;
 
-import com.zosh.model.VerificationCode;
-import com.zosh.repository.VerificationCodeRepository;
-import com.zosh.service.VerificationService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@Service
-public class VerificationServiceImpl implements VerificationService {
+import com.bakebuddy.entites.VerificationCode;
+import com.bakebuddy.repository.VerificationCodeRepository;
+import com.bakebuddy.service.VerificationService;
 
-    private final VerificationCodeRepository verificationCodeRepository;
+import jakarta.transaction.Transactional;
+
+@Service
+@Transactional
+public class VerificationServiceImpl implements VerificationService {
+	@Autowired
+    private  VerificationCodeRepository verificationCodeRepository;
 
     VerificationServiceImpl(VerificationCodeRepository verificationCodeRepository){
 

@@ -10,6 +10,6 @@ import com.bakebuddy.entites.Transaction;
 public interface TransactionService {
 
     Transaction createTransaction(Order order);
-    List<Transaction> getTransactionBySeller(BakeryOwner bakeryOwner);
+    List<Transaction> getTransactionByBakeryOwner(BakeryOwner bakeryOwner);
     List<Transaction>getAllTransactions();
 }

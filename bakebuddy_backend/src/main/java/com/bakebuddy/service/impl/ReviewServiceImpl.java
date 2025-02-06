@@ -1,23 +1,27 @@
-package com.zosh.service.impl;
+package com.bakebuddy.service.impl;
 
-import com.zosh.exception.ReviewNotFoundException;
-import com.zosh.model.Product;
-import com.zosh.model.Review;
-import com.zosh.model.User;
-import com.zosh.repository.ReviewRepository;
-import com.zosh.request.CreateReviewRequest;
-import com.zosh.service.ReviewService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import javax.naming.AuthenticationException;
 import java.util.List;
 
-@Service
-@RequiredArgsConstructor
-public class ReviewServiceImpl implements ReviewService {
+import javax.naming.AuthenticationException;
 
-    private final ReviewRepository reviewRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.bakebuddy.dto.request.CreateReviewRequest;
+import com.bakebuddy.entites.Product;
+import com.bakebuddy.entites.Review;
+import com.bakebuddy.entites.User;
+import com.bakebuddy.exception.ReviewNotFoundException;
+import com.bakebuddy.repository.ReviewRepository;
+import com.bakebuddy.service.ReviewService;
+
+import jakarta.transaction.Transactional;
+
+@Service
+@Transactional
+public class ReviewServiceImpl implements ReviewService {
+	@Autowired
+    private ReviewRepository reviewRepository;
 
 
     @Override
@@ -28,7 +32,6 @@ public class ReviewServiceImpl implements ReviewService {
 
         newReview.setReviewText(req.getReviewText());
         newReview.setRating(req.getReviewRating());
-        newReview.setProductImages(req.getProductImages());
         newReview.setUser(user);
         newReview.setProduct(product);
 
@@ -39,7 +42,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public List<Review> getReviewsByProductId(Long productId) {
-        return reviewRepository.findReviewsByProductId(productId);
+        return reviewRepository.findReviewsByProduct_Id(productId);
     }
 
 

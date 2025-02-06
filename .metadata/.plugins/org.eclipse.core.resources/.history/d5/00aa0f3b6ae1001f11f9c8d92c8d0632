@@ -1,7 +1,0 @@
-package com.bakebuddy.enums;
-
-public enum PaymentStatus {
-    PENDING, 
-    SUCCESS, 
-    FAILED
-}
