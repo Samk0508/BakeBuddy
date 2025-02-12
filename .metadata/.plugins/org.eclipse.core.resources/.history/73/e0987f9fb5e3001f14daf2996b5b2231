@@ -1,0 +1,45 @@
+package com.bakebuddy.service.impl;
+
+import com.bakebuddy.repository.BakeryOwnerReportRepository;
+import com.bakebuddy.service.BakeryOwnerReportService;
+import com.zosh.model.Seller;
+import com.zosh.model.SellerReport;
+import com.zosh.repository.SellerReportRepository;
+import com.zosh.service.SellerReportService;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@Transactional
+public class BakeryOwnerReportServiceImpl implements BakeryOwnerReportService {
+
+    @Autowired
+    private BakeryOwnerReportRepository bakeryOwnerReportRepository;
+
+
+    @Override
+    public SellerReport getSellerReport(Seller seller) {
+        SellerReport report = sellerReportRepository.findBySellerId(seller.getId());
+        if(report == null){
+            SellerReport newReport = new SellerReport();
+            newReport.setSeller(seller);
+            return sellerReportRepository.save(newReport);
+        }
+        return report;
+    }
+
+
+    @Override
+    public SellerReport updateSellerReport(SellerReport sellerReport) {
+
+        return sellerReportRepository.save(sellerReport);
+    }
+
+}

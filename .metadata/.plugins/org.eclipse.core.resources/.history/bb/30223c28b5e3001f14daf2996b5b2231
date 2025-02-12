@@ -1,0 +1,53 @@
+package com.bakebuddy.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.bakebuddy.entites.Order;
+import com.bakebuddy.entites.Transaction;
+import com.bakebuddy.repository.BakeryOwnerRepository;
+import com.bakebuddy.repository.TransactionRepository;
+import com.bakebuddy.service.TransactionService;
+import com.zosh.model.Seller;
+import com.zosh.repository.SellerRepository;
+
+import jakarta.transaction.Transactional;
+
+@Service
+@Transactional
+public class TransactionServiceImpl implements TransactionService {
+
+    private  TransactionRepository transactionRepository;
+    private  BakeryOwnerRepository bakeryOwnerRepository;
+
+    @Autowired
+    public TransactionServiceImpl(TransactionRepository transactionRepository,
+                                  SellerRepository sellerRepository
+    ) {
+        this.transactionRepository = transactionRepository;
+        this.sellerRepository = sellerRepository;
+    }
+
+    @Override
+    public Transaction createTransaction(Order order) {
+        Seller seller = sellerRepository.findById(order.getSellerId()).get();
+        Transaction transaction = new Transaction();
+        transaction.setCustomer(order.getUser());
+        transaction.setOrder(order);
+        transaction.setSeller(seller);
+        return transactionRepository.save(transaction);
+    }
+
+    @Override
+    public List<Transaction> getTransactionBySeller(Seller seller) {
+        return transactionRepository.findBySellerId(seller.getId());
+    }
+
+    @Override
+    public List<Transaction> getAllTransactions() {
+        return transactionRepository.findAll();
+    }
+
+}

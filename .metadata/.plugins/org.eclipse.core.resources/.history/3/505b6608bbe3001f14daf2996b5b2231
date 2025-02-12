@@ -1,0 +1,180 @@
+package com.bakebuddy.service.impl;
+
+import com.bakebuddy.config.JwtProvider;
+import com.bakebuddy.entites.BakeryOwner;
+import com.bakebuddy.exception.BakeryOwnerException;
+import com.bakebuddy.repository.AddressRepository;
+import com.bakebuddy.repository.BakeryOwnerRepository;
+import com.bakebuddy.service.BakeryOwnerService;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@Transactional
+public class BakeryOwnerServiceImpl implements BakeryOwnerService {
+	@Autowired
+    private  BakeryOwnerRepository bakeryOwnerRepository;
+	@Autowired
+	private  AddressRepository addressRepository;
+	@Autowired
+	private  PasswordEncoder passwordEncoder;
+	@Autowired
+	private  JwtProvider jwtProvider;
+
+
+	 @Override
+	    public BakeryOwner getBakeryOwnerProfile(String jwt) throws BakeryOwnerException {
+	        // Extract email from the JWT token and fetch the BakeryOwner profile
+	        String email = jwtProvider.getEmailFromJwtToken(jwt);
+	        return this.getBakeryOwnerByEmail(email);
+	    }
+
+    @Override
+    public Seller createSeller(Seller seller) throws SellerException {
+        Seller sellerExist = bakeryOwnerRepository.findByEmail(seller.getEmail());
+        if (sellerExist != null) {
+            throw new SellerException("Seller already exists used different email");
+        }
+
+        Address savedAddress = addressRepository.save(seller.getPickupAddress());
+
+
+        Seller newSeller = new Seller();
+        newSeller.setEmail(seller.getEmail());
+        newSeller.setPickupAddress(savedAddress);
+        newSeller.setSellerName(seller.getSellerName());
+        newSeller.setGSTIN(seller.getGSTIN());
+        newSeller.setRole(USER_ROLE.ROLE_SELLER);
+        newSeller.setMobile(seller.getMobile());
+
+        newSeller.setPassword(passwordEncoder.encode(seller.getPassword()));
+        newSeller.setBankDetails(seller.getBankDetails());
+        newSeller.setBusinessDetails(seller.getBusinessDetails());
+
+        System.out.println(newSeller);
+        return sellerRepository.save(newSeller);
+    }
+
+    @Override
+    public BakeryOwner getBakeryOwnerById(Long id) throws BakeryOwnerException {
+        // Retrieve the BakeryOwner by ID
+        Optional<BakeryOwner> optionalBakeryOwner = bakeryOwnerRepository.findById(id);
+        if (optionalBakeryOwner.isPresent()) {
+            return optionalBakeryOwner.get();  // Return found BakeryOwner
+        } else {
+            throw new BakeryOwnerException("BakeryOwner not found with id " + id);  // Throw exception if not found
+        }
+    }
+
+    @Override
+    public BakeryOwner getBakeryOwnerByEmail(String email) throws BakeryOwnerException {
+        // Retrieve the BakeryOwner by email
+        BakeryOwner bakeryOwner = bakeryOwnerRepository.findByUserEmail(email);
+        if (bakeryOwner != null) {
+            return bakeryOwner;  // Return found BakeryOwner
+        }
+        throw new BakeryOwnerException("BakeryOwner not found with email " + email);  // Throw exception if not found
+    }
+    
+    @Override
+    public List<BakeryOwner> getAllBakeryOwner(AccountStatus status) {
+        // Retrieve all BakeryOwners by their account status
+        return bakeryOwnerRepository.findByAccountStatus(status);
+    }
+
+    @Override
+    public Seller updateSeller(Long id, Seller seller) throws SellerException {
+        Seller existingSeller = sellerRepository.findById(id)
+                .orElseThrow(() ->
+                        new SellerException("Seller not found with id " + id));
+
+
+        if (seller.getSellerName() != null) {
+            existingSeller.setSellerName(seller.getSellerName());
+        }
+        if (seller.getMobile() != null) {
+            existingSeller.setMobile(seller.getMobile());
+        }
+        if (seller.getEmail() != null) {
+            existingSeller.setEmail(seller.getEmail());
+        }
+
+        if (seller.getBusinessDetails() != null
+                && seller.getBusinessDetails().getBusinessName() != null
+        ) {
+
+            existingSeller.getBusinessDetails().setBusinessName(
+                    seller.getBusinessDetails().getBusinessName()
+            );
+        }
+
+        if (seller.getBankDetails() != null
+                && seller.getBankDetails().getAccountHolderName() != null
+                && seller.getBankDetails().getIfscCode() != null
+                && seller.getBankDetails().getAccountNumber() != null
+        ) {
+
+            existingSeller.getBankDetails().setAccountHolderName(
+                    seller.getBankDetails().getAccountHolderName()
+            );
+            existingSeller.getBankDetails().setAccountNumber(
+                    seller.getBankDetails().getAccountNumber()
+            );
+            existingSeller.getBankDetails().setIfscCode(
+                    seller.getBankDetails().getIfscCode()
+            );
+        }
+        if (seller.getPickupAddress() != null
+                && seller.getPickupAddress().getAddress() != null
+                && seller.getPickupAddress().getMobile() != null
+                && seller.getPickupAddress().getCity() != null
+                && seller.getPickupAddress().getState() != null
+        ) {
+            existingSeller.getPickupAddress()
+                    .setAddress(seller.getPickupAddress().getAddress());
+            existingSeller.getPickupAddress().setCity(seller.getPickupAddress().getCity());
+            existingSeller.getPickupAddress().setState(seller.getPickupAddress().getState());
+            existingSeller.getPickupAddress().setMobile(seller.getPickupAddress().getMobile());
+            existingSeller.getPickupAddress().setPinCode(seller.getPickupAddress().getPinCode());
+        }
+        if (seller.getGSTIN() != null) {
+            existingSeller.setGSTIN(seller.getGSTIN());
+        }
+
+
+        return sellerRepository.save(existingSeller);
+
+    }
+
+    @Override
+    public void deleteBakeryOwner(Long id) throws BakeryOwnerException {
+        // Delete the BakeryOwner by ID, throwing an exception if not found
+        if (bakeryOwnerRepository.existsById(id)) {
+            bakeryOwnerRepository.deleteById(id);
+        } else {
+            throw new BakeryOwnerException("BakeryOwner not found with id " + id);
+        }
+    }
+
+    @Override
+    public BakeryOwner verifyEmail(String email, String otp) throws BakeryOwnerException {
+        // Verify the BakeryOwner's email by checking OTP and updating email verified status
+        BakeryOwner bakeryOwner = this.getBakeryOwnerByEmail(email);
+        bakeryOwner.setApproved(true);  // Assuming email verification approves the owner
+        return bakeryOwnerRepository.save(bakeryOwner);  // Return the updated BakeryOwner
+    }
+
+    @Override
+    public BakeryOwner updateBakeryOwnerAccountStatus(Long bakeryOwnerId, AccountStatus status) throws BakeryOwnerException {
+        // Update BakeryOwner account status
+        BakeryOwner bakeryOwner = this.getBakeryOwnerById(bakeryOwnerId);
+        bakeryOwner.setAccountStatus(status);
+        return bakeryOwnerRepository.save(bakeryOwner);
+    }
+}
